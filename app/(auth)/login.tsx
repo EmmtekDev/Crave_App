@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,7 +25,13 @@ export default function LoginScreen() {
       await signIn(email, password);
       router.replace('/(tabs)');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password.');
+      } else if (err.message.includes('Network')) {
+        setError('Network issue. Please check your internet.');
+      } else {
+        setError('Something went wrong. Try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,9 +41,14 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>🧡</Text>
+          <Image
+            source={require('@/assets/images/icon.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.appName}>CRAVE</Text>
         </View>
+
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Sign in to your account</Text>
 
@@ -103,8 +114,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logo: {
-    fontSize: 64,
+  logoImage: {
+    width: 100,  // smaller logo size
+    height: 100,
     marginBottom: 12,
   },
   appName: {

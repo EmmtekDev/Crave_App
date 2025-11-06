@@ -66,9 +66,14 @@ export default function HomeScreen() {
       style={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoSection}>
-          <Text style={styles.logoEmoji}>🧡</Text>
+          <Image
+            source={require('@/assets/images/icon.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <View>
             <Text style={styles.greeting}>Welcome to</Text>
             <Text style={styles.title}>CRAVE</Text>
@@ -77,6 +82,7 @@ export default function HomeScreen() {
         <ShoppingBag size={28} color={COLORS.primary} />
       </View>
 
+      {/* Categories */}
       {categories.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categories</Text>
@@ -101,6 +107,7 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {/* Featured Products */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Featured Products</Text>
@@ -133,7 +140,7 @@ export default function HomeScreen() {
                   <Text style={styles.productName} numberOfLines={2}>
                     {product.name}
                   </Text>
-                  <Text style={styles.productPrice}>{product.price.toFixed(2)}</Text>
+                  <Text style={styles.productPrice}>₦{product.price.toFixed(2)}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -168,8 +175,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  logoEmoji: {
-    fontSize: 32,
+  logoImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
   },
   greeting: {
     fontSize: 14,

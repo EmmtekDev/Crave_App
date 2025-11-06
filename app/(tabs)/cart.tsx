@@ -127,7 +127,7 @@ export default function CartScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#FF7A00" />
       </View>
     );
   }
@@ -181,18 +181,22 @@ export default function CartScreen() {
                   <View style={styles.quantityContainer}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, item.quantity - 1, item.products!.stock_quantity)}
+                      onPress={() =>
+                        updateQuantity(item.id, item.quantity - 1, item.products!.stock_quantity)
+                      }
                       disabled={isUpdating}
                     >
-                      <Minus size={16} color="#007AFF" />
+                      <Minus size={16} color="#FF7A00" />
                     </TouchableOpacity>
                     <Text style={styles.quantity}>{item.quantity}</Text>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, item.quantity + 1, item.products!.stock_quantity)}
+                      onPress={() =>
+                        updateQuantity(item.id, item.quantity + 1, item.products!.stock_quantity)
+                      }
                       disabled={isUpdating}
                     >
-                      <Plus size={16} color="#007AFF" />
+                      <Plus size={16} color="#FF7A00" />
                     </TouchableOpacity>
                   </View>
 
@@ -288,7 +292,7 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#007AFF',
+    color: '#FF7A00',
     marginVertical: 4,
   },
   itemActions: {
@@ -336,10 +340,10 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#007AFF',
+    color: '#FF7A00',
   },
   checkoutButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF7A00',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -356,7 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF7A00',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,

@@ -75,7 +75,7 @@ export default function ProductsScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#FF8C00" />
       </View>
     );
   }
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   categoryChipActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF8C00',
   },
   categoryChipText: {
     fontSize: 14,
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#007AFF',
+    color: '#FF8C00',
   },
   outOfStock: {
     marginTop: 4,

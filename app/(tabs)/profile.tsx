@@ -4,47 +4,49 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Image,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
   RefreshControl,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
-import { UserProfile, Order } from '@/types/database';
-import { User, LogOut, Package, Settings, ChevronRight } from 'lucide-react-native';
+import { Product, Category } from '@/types/database';
+import { Search, ShoppingBag } from 'lucide-react-native';
 
-export default function ProfileScreen() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+export default function ProductsScreen() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const params = useLocalSearchParams();
 
-  const loadProfile = async () => {
-    if (!user) {
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
+  const loadCategories = async () => {
+    const { data } = await supabase.from('categories').select('*');
+    if (data) setCategories(data as Category[]);
+  };
 
+  const loadProducts = async () => {
     try {
-      const [profileRes, ordersRes] = await Promise.all([
-        supabase.from('user_profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(5),
-      ]);
+      let query = supabase.from('products').select('*').eq('is_active', true);
 
-      if (profileRes.data) setProfile(profileRes.data as UserProfile);
-      if (ordersRes.data) setOrders(ordersRes.data as Order[]);
-    } catch (err) {
-      console.error('Error loading profile:', err);
+      if (selectedCategory) {
+        query = query.eq('category_id', selectedCategory);
+      }
+
+      if (searchQuery.trim()) {
+        query = query.ilike('name', `%${searchQuery}%`);
+      }
+
+      const { data } = await query.order('created_at', { ascending: false });
+
+      if (data) setProducts(data as Product[]);
+    } catch (error) {
+      console.error('Error loading products:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -52,57 +54,28 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    loadProfile();
-  }, [user]);
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    if (params.category) {
+      setSelectedCategory(params.category as string);
+    }
+  }, [params.category]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [selectedCategory, searchQuery]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadProfile();
+    loadProducts();
   };
-
-  const handleSignOut = async () => {
-    setSigningOut(true);
-    try {
-      await signOut();
-      router.replace('/(auth)/login');
-    } catch (err) {
-      console.error('Error signing out:', err);
-    } finally {
-      setSigningOut(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return '#4a4';
-      case 'shipped':
-        return '#07f';
-      case 'processing':
-        return '#fa0';
-      case 'cancelled':
-        return '#f44';
-      default:
-        return '#999';
-    }
-  };
-
-  if (!user) {
-    return (
-      <View style={styles.centerContainer}>
-        <User size={64} color="#ccc" />
-        <Text style={styles.emptyText}>Please sign in to view your profile</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/login')}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#FF7A00" />
       </View>
     );
   }
@@ -110,102 +83,84 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.title}>Products</Text>
+        <View style={styles.searchContainer}>
+          <Search size={20} color="#999" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search products..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
+
+      {categories.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
+          <TouchableOpacity
+            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory(null)}
+          >
+            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[styles.categoryChip, selectedCategory === category.id && styles.categoryChipActive]}
+              onPress={() => setSelectedCategory(category.id)}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  selectedCategory === category.id && styles.categoryChipTextActive,
+                ]}
+              >
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
 
       <ScrollView
         style={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <User size={40} color="#007AFF" />
+        {products.length === 0 ? (
+          <View style={styles.emptyState}>
+            <ShoppingBag size={64} color="#ccc" />
+            <Text style={styles.emptyText}>No products found</Text>
           </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{profile?.full_name || 'User'}</Text>
-            <Text style={styles.profileEmail}>{user.email}</Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/profile/edit')}>
-            <View style={styles.menuItemLeft}>
-              <Settings size={24} color="#007AFF" />
-              <Text style={styles.menuItemText}>Edit Profile</Text>
-            </View>
-            <ChevronRight size={20} color="#999" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/orders')}>
-            <View style={styles.menuItemLeft}>
-              <Package size={24} color="#007AFF" />
-              <Text style={styles.menuItemText}>My Orders</Text>
-            </View>
-            <ChevronRight size={20} color="#999" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Orders</Text>
-            {orders.length > 0 && (
-              <TouchableOpacity onPress={() => router.push('/orders')}>
-                <Text style={styles.seeAll}>See All</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {orders.length === 0 ? (
-            <View style={styles.emptyOrders}>
-              <Package size={48} color="#ccc" />
-              <Text style={styles.emptyOrdersText}>No orders yet</Text>
-            </View>
-          ) : (
-            <View>
-              {orders.map((order) => (
-                <TouchableOpacity
-                  key={order.id}
-                  style={styles.orderCard}
-                  onPress={() => router.push(`/order/${order.id}`)}
-                >
-                  <View style={styles.orderHeader}>
-                    <Text style={styles.orderNumber}>{order.order_number}</Text>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '20' }]}>
-                      <Text style={[styles.statusText, { color: getStatusColor(order.status) }]}>
-                        {order.status}
-                      </Text>
-                    </View>
+        ) : (
+          <View style={styles.productsGrid}>
+            {products.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                style={styles.productCard}
+                onPress={() => router.push(`/product/${product.id}`)}
+              >
+                {product.images && product.images.length > 0 ? (
+                  <Image source={{ uri: product.images[0] }} style={styles.productImage} />
+                ) : (
+                  <View style={[styles.productImage, styles.productImagePlaceholder]}>
+                    <ShoppingBag size={40} color="#ccc" />
                   </View>
-                  <Text style={styles.orderAmount}>${order.total_amount.toFixed(2)}</Text>
-                  <Text style={styles.orderDate}>
-                    {new Date(order.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                )}
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName} numberOfLines={2}>
+                    {product.name}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        <TouchableOpacity
-          style={[styles.signOutButton, signingOut && styles.signOutButtonDisabled]}
-          onPress={handleSignOut}
-          disabled={signingOut}
-        >
-          {signingOut ? (
-            <ActivityIndicator color="#f44" />
-          ) : (
-            <>
-              <LogOut size={20} color="#f44" />
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </>
-          )}
-        </TouchableOpacity>
+                  <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+                  {product.stock_quantity === 0 && (
+                    <Text style={styles.outOfStock}>Out of Stock</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -221,7 +176,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f8f8f8',
-    padding: 20,
   },
   header: {
     backgroundColor: '#fff',
@@ -235,168 +189,105 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#1a1a1a',
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoryChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 12,
+  },
+  categoryChipActive: {
+    backgroundColor: '#FF7A00',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  categoryChipTextActive: {
+    color: '#fff',
   },
   content: {
     flex: 1,
   },
-  profileCard: {
+  productsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingTop: 16,
+  },
+  productCard: {
+    width: '47%',
+    margin: 8,
     backgroundColor: '#fff',
-    margin: 16,
-    padding: 20,
     borderRadius: 16,
-    alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  productImage: {
+    width: '100%',
+    height: 180,
     backgroundColor: '#f0f0f0',
+  },
+  productImagePlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileInfo: {
-    marginLeft: 16,
-    flex: 1,
+  productInfo: {
+    padding: 12,
   },
-  profileName: {
-    fontSize: 20,
-    fontWeight: '700',
+  productName: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 4,
   },
-  profileEmail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  section: {
-    marginTop: 8,
-    paddingHorizontal: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 12,
-  },
-  seeAll: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuItemText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginLeft: 12,
-  },
-  orderCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  orderNumber: {
+  productPrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#FF7A00',
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
+  outOfStock: {
+    marginTop: 4,
     fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  orderAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#007AFF',
-    marginBottom: 4,
-  },
-  orderDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  emptyOrders: {
-    alignItems: 'center',
-    padding: 40,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-  },
-  emptyOrdersText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#999',
-  },
-  signOutButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#f44',
-    gap: 8,
-  },
-  signOutButtonDisabled: {
-    opacity: 0.6,
-  },
-  signOutText: {
-    fontSize: 16,
-    fontWeight: '700',
     color: '#f44',
+    fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 60,
   },
   emptyText: {
-    fontSize: 18,
-    color: '#666',
     marginTop: 16,
-    marginBottom: 24,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  buttonText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    color: '#999',
   },
 });
