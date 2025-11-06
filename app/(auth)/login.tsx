@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { COLORS } from '@/theme/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -33,8 +34,12 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logo}>🧡</Text>
+          <Text style={styles.appName}>CRAVE</Text>
+        </View>
         <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to Crave Mobile Accessories</Text>
+        <Text style={styles.subtitle}>Sign in to your account</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -87,22 +92,36 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
   },
   content: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    fontSize: 64,
+    marginBottom: 12,
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.primary,
+    letterSpacing: 2,
+  },
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: COLORS.textSecondary,
     marginBottom: 32,
   },
   form: {
@@ -110,14 +129,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: COLORS.background,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLORS.primary,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -133,17 +152,17 @@ const styles = StyleSheet.create({
   },
   linkText: {
     textAlign: 'center',
-    color: '#666',
+    color: COLORS.textSecondary,
     fontSize: 14,
     marginTop: 8,
   },
   link: {
-    color: '#007AFF',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   error: {
-    backgroundColor: '#fee',
-    color: '#c33',
+    backgroundColor: COLORS.errorBg,
+    color: COLORS.error,
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,

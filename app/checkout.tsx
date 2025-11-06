@@ -13,7 +13,10 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { CartItem, UserProfile } from '@/types/database';
-import { ArrowLeft, CreditCard } from 'lucide-react-native';
+import { ArrowLeft, CreditCard, Truck, CheckCircle2 } from 'lucide-react-native';
+import { COLORS } from '@/theme/colors';
+
+const SHIPPING_FEE = 2499;
 
 export default function CheckoutScreen() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -160,7 +163,7 @@ export default function CheckoutScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -169,7 +172,7 @@ export default function CheckoutScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1a1a1a" />
+          <ArrowLeft size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.title}>Checkout</Text>
         <View style={{ width: 24 }} />
@@ -260,7 +263,7 @@ export default function CheckoutScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
           <View style={styles.paymentNote}>
-            <CreditCard size={24} color="#007AFF" />
+            <CreditCard size={24} color={COLORS.primary} />
             <Text style={styles.paymentNoteText}>
               Flutterwave payment integration will be available soon. Your order will be created with pending
               payment status.
@@ -291,24 +294,24 @@ export default function CheckoutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: COLORS.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.divider,
   },
   backButton: {
     width: 40,
@@ -318,20 +321,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
   },
   content: {
     flex: 1,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     marginTop: 16,
     padding: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
     marginBottom: 16,
   },
   orderItem: {
@@ -341,13 +344,13 @@ const styles = StyleSheet.create({
   },
   orderItemName: {
     fontSize: 14,
-    color: '#666',
+    color: COLORS.textSecondary,
     flex: 1,
   },
   orderItemPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: COLORS.text,
   },
   totalRow: {
     flexDirection: 'row',
@@ -355,25 +358,25 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.divider,
   },
   totalLabel: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
   },
   totalAmount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#007AFF',
+    color: COLORS.primary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: COLORS.border,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: COLORS.background,
     marginBottom: 12,
   },
   row: {
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
   paymentNote: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#FFF5E6',
     borderRadius: 12,
     gap: 12,
     alignItems: 'center',
@@ -394,12 +397,12 @@ const styles = StyleSheet.create({
   paymentNoteText: {
     flex: 1,
     fontSize: 14,
-    color: '#007AFF',
+    color: COLORS.primary,
     lineHeight: 20,
   },
   error: {
-    backgroundColor: '#fee',
-    color: '#c33',
+    backgroundColor: COLORS.errorBg,
+    color: COLORS.error,
     padding: 16,
     margin: 16,
     borderRadius: 8,
@@ -407,13 +410,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.divider,
   },
   placeOrderButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: COLORS.primary,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',

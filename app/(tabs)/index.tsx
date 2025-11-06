@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Product, Category } from '@/types/database';
 import { ShoppingBag } from 'lucide-react-native';
+import { COLORS } from '@/theme/colors';
 
 export default function HomeScreen() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -55,7 +56,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -66,11 +67,14 @@ export default function HomeScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome to</Text>
-          <Text style={styles.title}>CRAVE</Text>
+        <View style={styles.logoSection}>
+          <Text style={styles.logoEmoji}>🧡</Text>
+          <View>
+            <Text style={styles.greeting}>Welcome to</Text>
+            <Text style={styles.title}>CRAVE</Text>
+          </View>
         </View>
-        <ShoppingBag size={28} color="#ff7300ff" />
+        <ShoppingBag size={28} color={COLORS.primary} />
       </View>
 
       {categories.length > 0 && (
@@ -87,7 +91,7 @@ export default function HomeScreen() {
                   <Image source={{ uri: category.image_url }} style={styles.categoryImage} />
                 ) : (
                   <View style={[styles.categoryImage, styles.categoryImagePlaceholder]}>
-                    <ShoppingBag size={32} color="#007AFF" />
+                    <ShoppingBag size={32} color={COLORS.primary} />
                   </View>
                 )}
                 <Text style={styles.categoryName}>{category.name}</Text>
@@ -129,7 +133,7 @@ export default function HomeScreen() {
                   <Text style={styles.productName} numberOfLines={2}>
                     {product.name}
                   </Text>
-                  <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
+                  <Text style={styles.productPrice}>{product.price.toFixed(2)}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -143,13 +147,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: COLORS.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -157,16 +161,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
+  },
+  logoSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  logoEmoji: {
+    fontSize: 32,
   },
   greeting: {
     fontSize: 14,
-    color: '#666',
+    color: COLORS.textSecondary,
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
     marginTop: 4,
   },
   section: {
@@ -182,13 +194,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: COLORS.text,
     paddingHorizontal: 20,
     marginBottom: 16,
   },
   seeAll: {
     fontSize: 14,
-    color: '#007AFF',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   categoriesScroll: {
@@ -203,7 +215,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: COLORS.divider,
   },
   categoryImagePlaceholder: {
     justifyContent: 'center',
@@ -213,7 +225,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: COLORS.text,
     textAlign: 'center',
   },
   productsGrid: {
@@ -224,7 +236,7 @@ const styles = StyleSheet.create({
   productCard: {
     width: '47%',
     margin: 8,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.surface,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -236,7 +248,7 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: 180,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: COLORS.divider,
   },
   productImagePlaceholder: {
     justifyContent: 'center',
@@ -248,13 +260,13 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: COLORS.text,
     marginBottom: 4,
   },
   productPrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#007AFF',
+    color: COLORS.primary,
   },
   emptyState: {
     alignItems: 'center',
@@ -263,6 +275,6 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#999',
+    color: COLORS.textTertiary,
   },
 });
